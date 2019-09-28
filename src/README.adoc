@@ -1,0 +1,15 @@
+:image-root: https://raw.githubusercontent.com/cppwfs/funwithctr/master/images
+
+= Sample Composed Task Runner Tour
+
+The purpose of this project is to provide an outline on building a Composed Task Tree in Spring Cloud Data Flow.
+
+== Overview
+This tour has a task application that allows the user to specify the Task Exit Message via a property.
+This allows the user to test various transition paths through a Composed Task directed graph.
+
+=== Transitions
+Transitions allow users to specify the branch of a tree they want the flow to follow.
+A task transition is represented by the following symbol ->.
+So lets create a basic transition graph.
+image::{image-root}/basictransition.png[basic transition]
