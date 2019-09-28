@@ -109,7 +109,7 @@ This was because FOO was not targeted.   How would we handle that?  i.e. have a 
 
 In this case would want to create another composed task that would look like:
 
-image::{image-root}/basictransition1.png[basic transition]
+image::{image-root}/basictransition2.png[basic transition with wild card]
 
 Let's create this composed task as follows using the shell:
 ```
