@@ -9,6 +9,16 @@ The purpose of this project is to provide an outline on building a Composed Task
 This tour has a task application that allows the user to specify the Task Exit Message via a property.
 This allows the user to test various transition paths through a Composed Task directed graph.
 
+=== Building the Application
+To build the application:
+```
+mvn clean install
+```
+To build the docker image:
+```
+mvn dockerfile:build
+```
+
 === Transitions
 Transitions allow users to specify the branch of a tree they want the flow to follow.
 A task transition is represented by the following symbol ->.
@@ -19,7 +29,7 @@ image::{image-root}/basictransition1.png[basic transition]
 First let's register our testapp application using the shell
 
 ```
-app register --name transition-app --type task --uri file:///Users/glennrenfro/project/taskapp/target/taskapp-1.0.0.BUILD-SNAPSHOT.jar
+app register --name transition-app --type task --uri maven://io.spring:taskapp:1.0.0.BUILD-SNAPSHOT
 ```
 
 Now Let's create this basic transition where the branches will be timestamps but each timestamp will have a unique label.  From your shell run the following command:
@@ -170,7 +180,7 @@ And we should see:
 ║splitgraph                      │116│Sat Sep 28 13:05:21 EDT 2019│Sat Sep 28 13:05:33 EDT 2019│0        ║
 ╚════════════════════════════════╧═══╧════════════════════════════╧════════════════════════════╧═════════╝
 ```
-In this example we see that the split1-3 was fired simultaneously before we launched our transition app.
+In this example we see that the split1-3 were fired simultaneously before ctr launched our transition app.
 And we added a new argument `--split-thread-core-pool-size=4`  This basically states that the composed task runner can run 4 apps simultaneously.
 
 
