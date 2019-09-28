@@ -12,6 +12,61 @@ This allows the user to test various transition paths through a Composed Task di
 === Transitions
 Transitions allow users to specify the branch of a tree they want the flow to follow.
 A task transition is represented by the following symbol ->.
-So lets create a basic transition graph.'
+So lets create a basic transition graph.
 
 image::{image-root}/basictransition.png[basic transition]
+
+First let's register our testapp application using the shell
+
+app register --name transition-app --type task --uri file:///Users/glennrenfro/project/taskapp/target/taskapp-1.0.0.BUILD-SNAPSHOT.jar
+
+Now Let's create this basic transition where the branches will be timestamps but each timestamp will have a unique label.  From your shell run the following command:
+```
+task create basictransition --definition "transition-app 'FAILED'->timestamp-1: timestamp 'COMPLETED'->timestamp-2: timestamp"
+```
+
+Now let's launch our composed task a couple of times so that we can exercise its paths through the tree.
+
+First let's see what happens if we set the exit message to "FAILED"
+```
+task launch basictransition --arguments "--increment-instance-enabled=true --interval-time-between-checks=1000" --properties "app.basictransition.transition-app.taskapp.exitMessage=FAILED"
+```
+
+Now that it has been executed let's verify that path path `FAILED` was acutally followed and this can be done by executing:
+```
+task execution list
+```
+And we should see:
+```
+╔══════════════════════════════╤═══╤════════════════════════════╤════════════════════════════╤═════════╗
+║          Task Name           │ID │         Start Time         │          End Time          │Exit Code║
+╠══════════════════════════════╪═══╪════════════════════════════╪════════════════════════════╪═════════╣
+║basictransition-timestamp-1   │101│Sat Sep 28 11:54:10 EDT 2019│Sat Sep 28 11:54:10 EDT 2019│0        ║
+║basictransition-transition-app│100│Sat Sep 28 11:54:06 EDT 2019│Sat Sep 28 11:54:06 EDT 2019│0        ║
+║basictransition               │99 │Sat Sep 28 11:54:03 EDT 2019│Sat Sep 28 11:54:10 EDT 2019│0        ║
+╚══════════════════════════════╧═══╧════════════════════════════╧════════════════════════════╧═════════╝
+```
+This shows us that the composed task runner controlling the composed task execution `basic-transition` was launched and the `transition-app` was launched.
+From there the proper `FAILED` branch was executed as denoted by `basictransition-timestamp-1` was launched.
+
+Now if we relaunch the composed-task-runner but this time we do not set taskapp.exitMessage we should exercise the other branch for example from the shell execute the following:
+```
+task launch basictransition --arguments "--increment-instance-enabled=true --interval-time-between-checks=1000"
+```
+Now that it has been executed let's verify that path path `FAILED` was acutally followed and this can be done by executing:
+```
+task execution list
+```
+And we should see:
+```
+╔══════════════════════════════╤═══╤════════════════════════════╤════════════════════════════╤═════════╗
+║          Task Name           │ID │         Start Time         │          End Time          │Exit Code║
+╠══════════════════════════════╪═══╪════════════════════════════╪════════════════════════════╪═════════╣
+║basictransition-timestamp-2   │107│Sat Sep 28 12:08:40 EDT 2019│Sat Sep 28 12:08:40 EDT 2019│0        ║
+║basictransition-transition-app│106│Sat Sep 28 12:08:37 EDT 2019│Sat Sep 28 12:08:37 EDT 2019│0        ║
+║basictransition               │105│Sat Sep 28 12:08:34 EDT 2019│Sat Sep 28 12:08:40 EDT 2019│0        ║
+╚══════════════════════════════╧═══╧════════════════════════════╧════════════════════════════╧═════════╝
+```
+
+
+Wait a minute...  What is all that stuff I put in the command line?
