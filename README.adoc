@@ -14,4 +14,6 @@ Transitions allow users to specify the branch of a tree they want the flow to fo
 A task transition is represented by the following symbol ->.
 So lets create a basic transition graph.'
 
-image::{image-root}/basictransition.png [basic transition]
+image::{image-root}/basictransition.png[basic transition]
+
+image::{image-root}/basicsequence.png[basic sequence]
