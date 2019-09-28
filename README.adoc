@@ -34,7 +34,7 @@ First let's see what happens if we set the exit message to "FAILED"
 task launch basictransition --arguments "--increment-instance-enabled=true --interval-time-between-checks=1000" --properties "app.basictransition.transition-app.taskapp.exitMessage=FAILED"
 ```
 
-Now that it has been executed let's verify that path path `FAILED` was acutally followed and this can be done by executing:
+Now that it has been executed let's verify that path `FAILED` was acutally followed and this can be done by executing:
 ```
 task execution list
 ```
@@ -55,7 +55,7 @@ Now if we relaunch the composed-task-runner but this time we do not set taskapp.
 ```
 task launch basictransition --arguments "--increment-instance-enabled=true --interval-time-between-checks=1000"
 ```
-Now that it has been executed let's verify that path path `FAILED` was acutally followed and this can be done by executing:
+Now that it has been executed let's verify that `COMPLETED` was acutally followed and this can be done by executing:
 ```
 task execution list
 ```
@@ -91,7 +91,7 @@ Now what happens if I were to enter "FOO" for the exit message what would happen
 task launch basictransition --arguments "--increment-instance-enabled=true --interval-time-between-checks=1000" --properties "app.basictransition.transition-app.taskapp.exitMessage=FOO"
 ```
 
-Now that it has been executed let's verify that path path `FAILED` was acutally followed and this can be done by executing:
+Now that it has been executed let's see the result:
 ```
 task execution list
 ```
@@ -107,7 +107,7 @@ And we should see:
 In this case we see that the composed task ended with just running the composed task runner and the transition app.
 This was because FOO was not targeted.   How would we handle that?  i.e. have a path for `COMPLETED`, `FAILED`, and everything else?
 
-In this case would want to create another composed task that would look like:
+In this case would want to create another composed task using a wild card that would look like:
 
 image::{image-root}/basictransition2.png[basic transition with wild card]
 
@@ -115,3 +115,62 @@ Let's create this composed task as follows using the shell:
 ```
 task create anothertransition --definition "transition-app 'FAILED'->timestamp-1: timestamp 'COMPLETED'->timestamp-2: timestamp '*' -> timestamp-3:timestamp"
 ```
+
+Now let's try executing that again using our new `anothertransition` composed task:
+```
+task launch anothertransition --arguments "--increment-instance-enabled=true --interval-time-between-checks=1000" --properties "app.anothertransition.transition-app.taskapp.exitMessage=FOO"
+```
+
+Now that it has been executed let's see the result:
+```
+task execution list
+```
+And we should see:
+```
+╔════════════════════════════════╤═══╤════════════════════════════╤════════════════════════════╤═════════╗
+║           Task Name            │ID │         Start Time         │          End Time          │Exit Code║
+╠════════════════════════════════╪═══╪════════════════════════════╪════════════════════════════╪═════════╣
+║anothertransition-timestamp-3   │115│Sat Sep 28 12:44:55 EDT 2019│Sat Sep 28 12:44:55 EDT 2019│0        ║
+║anothertransition-transition-app│114│Sat Sep 28 12:44:53 EDT 2019│Sat Sep 28 12:44:53 EDT 2019│0        ║
+║anothertransition               │113│Sat Sep 28 12:44:50 EDT 2019│Sat Sep 28 12:44:56 EDT 2019│0        ║
+╚════════════════════════════════╧═══╧════════════════════════════╧════════════════════════════╧═════════╝
+```
+In this case we see that the wildcard catches all other exit messages and this can be seen in that anothertransition-timestamp-3 was launched.
+
+=== Splits
+What if we want to execute multiple tasks at the same time.   This can be done by using the split.
+Let's say we want  to execute 3 apps simultaneously and once they all complete we want to execute the remainder of our tree. Like this
+
+image::{image-root}/splitgraph.png[split graph]
+
+Let's create this composed task as follows using the shell:
+```
+task create splitgraph --definition "<split1: timestamp ||split2: timestamp  ||split3: timestamp>  && transition-app 'FAILED'->timestamp-1: timestamp 'COMPLETED'->timestamp-2: timestamp '*' -> timestamp-3:timestamp"
+```
+
+Now let's execute `splitgraph` composed task:
+```
+task launch splitgraph --arguments "--increment-instance-enabled=true --interval-time-between-checks=1000 --split-thread-core-pool-size=4" --properties "app.splitgraph.transition-app.taskapp.exitMessage=FOO"
+```
+
+Now that it has been executed let's see the result:
+```
+task execution list
+```
+And we should see:
+```
+╔════════════════════════════════╤═══╤════════════════════════════╤════════════════════════════╤═════════╗
+║           Task Name            │ID │         Start Time         │          End Time          │Exit Code║
+╠════════════════════════════════╪═══╪════════════════════════════╪════════════════════════════╪═════════╣
+║splitgraph-timestamp-3          │121│Sat Sep 28 13:05:33 EDT 2019│Sat Sep 28 13:05:33 EDT 2019│0        ║
+║splitgraph-transition-app       │120│Sat Sep 28 13:05:30 EDT 2019│Sat Sep 28 13:05:30 EDT 2019│0        ║
+║splitgraph-split1               │118│Sat Sep 28 13:05:27 EDT 2019│Sat Sep 28 13:05:27 EDT 2019│0        ║
+║splitgraph-split2               │119│Sat Sep 28 13:05:26 EDT 2019│Sat Sep 28 13:05:27 EDT 2019│0        ║
+║splitgraph-split3               │117│Sat Sep 28 13:05:26 EDT 2019│Sat Sep 28 13:05:26 EDT 2019│0        ║
+║splitgraph                      │116│Sat Sep 28 13:05:21 EDT 2019│Sat Sep 28 13:05:33 EDT 2019│0        ║
+╚════════════════════════════════╧═══╧════════════════════════════╧════════════════════════════╧═════════╝
+```
+In this example we see that the split1-3 was fired simultaneously before we launched our transition app.
+And we added a new argument `--split-thread-core-pool-size=4`  This basically states that the composed task runner can run 4 apps simultaneously.
+
+
