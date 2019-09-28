@@ -86,10 +86,11 @@ Wait a minute...  What is all that stuff I put in the command line?
 So for this example we wanted to show how to use both command line args and properties.
 We used the arguments to establish the properties for the Composed Task Runner:
 
-1. `--increment-instance-enabled=true` states that we want to be able to execute this Composed Task multiple times.   (Composed Tasks are build using Spring Batch and thus are a batch job)
-2. `--interval-time-between-checks=1000` states that the composed task runner will wait 1 second between checks to make sure that a task is complete the default is 10 seconds.  This was to speed up our execution.
+1. `--increment-instance-enabled=true` states that we want to be able to execute this Composed Task multiple times.   (Composed Tasks are build using Spring Batch and thus are batch jobs)
+2. `--interval-time-between-checks=1000` states that the composed task runner will wait 1 second between checks to make sure that a task is complete (the default is 10 seconds).
 
 We used the properties to set the `transition-app` properties.   Notice we had 4 sections for the `taskapp.exitMessage` property lets breakdown the `app.basictransition.transition-app.taskapp.exitMessage=FAILED` into its components:
+
 1. `app` tells spring cloud dataflow that this property is to be used for task application.
 2. `basictransition` tells dataflow that this property will be used by the composed task runner or one of the apps in the graph
 3. `transition-app` tells dataflow that this property is to be used by the `transition-app`
