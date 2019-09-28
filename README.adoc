@@ -18,7 +18,9 @@ image::{image-root}/basictransition1.png[basic transition]
 
 First let's register our testapp application using the shell
 
+```
 app register --name transition-app --type task --uri file:///Users/glennrenfro/project/taskapp/target/taskapp-1.0.0.BUILD-SNAPSHOT.jar
+```
 
 Now Let's create this basic transition where the branches will be timestamps but each timestamp will have a unique label.  From your shell run the following command:
 ```
@@ -68,5 +70,48 @@ And we should see:
 ╚══════════════════════════════╧═══╧════════════════════════════╧════════════════════════════╧═════════╝
 ```
 
+==== What did I just do?
 
 Wait a minute...  What is all that stuff I put in the command line?
+So for this example we wanted to show how to use both command line args and properties.
+We used the arguments to establish the properties for the Composed Task Runner:
+
+1. `--increment-instance-enabled=true` states that we want to be able to execute this Composed Task multiple times.   (Composed Tasks are build using Spring Batch and thus are a batch job)
+2. `--interval-time-between-checks=1000` states that the composed task runner will wait 1 second between checks to make sure that a task is complete the default is 10 seconds.  This was to speed up our execution.
+
+We used the properties to set the `transition-app` properties.   Notice we had 4 sections for the `taskapp.exitMessage` property lets breakdown the `app.basictransition.transition-app.taskapp.exitMessage=FAILED` into its components:
+1. `app` tells spring cloud dataflow that this property is to be used for task application.
+2. `basictransition` tells dataflow that this property will be used by the composed task runner or one of the apps in the graph
+3. `transition-app` tells dataflow that this property is to be used by the `transition-app`
+4. `taskapp.exitMessage` the property itself.
+
+==== Are there more states to a transition?
+Now what happens if I were to enter "FOO" for the exit message what would happen?   Well lets try it!
+```
+task launch basictransition --arguments "--increment-instance-enabled=true --interval-time-between-checks=1000" --properties "app.basictransition.transition-app.taskapp.exitMessage=FOO"
+```
+
+Now that it has been executed let's verify that path path `FAILED` was acutally followed and this can be done by executing:
+```
+task execution list
+```
+And we should see:
+```
+╔══════════════════════════════╤═══╤════════════════════════════╤════════════════════════════╤═════════╗
+║          Task Name           │ID │         Start Time         │          End Time          │Exit Code║
+╠══════════════════════════════╪═══╪════════════════════════════╪════════════════════════════╪═════════╣
+║basictransition-transition-app│109│Sat Sep 28 12:31:30 EDT 2019│Sat Sep 28 12:31:30 EDT 2019│0        ║
+║basictransition               │108│Sat Sep 28 12:31:27 EDT 2019│Sat Sep 28 12:31:30 EDT 2019│0        ║
+╚══════════════════════════════╧═══╧════════════════════════════╧════════════════════════════╧═════════╝
+```
+In this case we see that the composed task ended with just running the composed task runner and the transition app.
+This was because FOO was not targeted.   How would we handle that?  i.e. have a path for `COMPLETED`, `FAILED`, and everything else?
+
+In this case would want to create another composed task that would look like:
+
+image::{image-root}/basictransition1.png[basic transition]
+
+Let's create this composed task as follows using the shell:
+```
+task create anothertransition --definition "transition-app 'FAILED'->timestamp-1: timestamp 'COMPLETED'->timestamp-2: timestamp '*' -> timestamp-3:timestamp"
+```
