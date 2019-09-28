@@ -1,3 +1,4 @@
+//tag::ref-doc[]
 :image-root: https://raw.githubusercontent.com/cppwfs/funwithctr/master/images
 
 = Sample Composed Task Runner Tour
