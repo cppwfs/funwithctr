@@ -12,5 +12,6 @@ This allows the user to test various transition paths through a Composed Task di
 === Transitions
 Transitions allow users to specify the branch of a tree they want the flow to follow.
 A task transition is represented by the following symbol ->.
-So lets create a basic transition graph.
+So lets create a basic transition graph.'
+
 image::{image-root}/basictransition.png [basic transition]
