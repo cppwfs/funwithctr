@@ -28,15 +28,19 @@ image::{image-root}/basictransition1.png[basic transition]
 
 First let's register our testapp application using the shell
 
+==== Register the app
+Copy the `/<path-to-simple-task-jar>/taskapp-1.0.0.BUILD-SNAPSHOT.jar` to the `workspace/scdf-code/installation/spring-cloud/workspace` directory (this directory is located under the same parent directory where docker-compose.yml is located).
+From the Spring Cloud Data Flow Shell execute the following:
 ```
-app register --name transition-app --type task --uri maven://io.spring:taskapp:1.0.0.BUILD-SNAPSHOT
+app register --name transition-app --type task --uri file:///workspace/taskapp-1.0.0.BUILD-SNAPSHOT.jar
 ```
-
+==== Create the Composed Task Definition
 Now Let's create this basic transition where the branches will be timestamps but each timestamp will have a unique label.  From your shell run the following command:
 ```
 task create basictransition --definition "transition-app 'FAILED'->timestamp-1: timestamp 'COMPLETED'->timestamp-2: timestamp"
 ```
 
+==== Launch the Composed Task Definition
 Now let's launch our composed task a couple of times so that we can exercise its paths through the tree.
 
 First let's see what happens if we set the exit message to "FAILED"
